@@ -147,9 +147,3 @@ Original file is located at
 #         st.session_state.clear()
 #         st.rerun()
 #
-
-!streamlit run app.py &>/content/logs.txt &
-
-!wget -q -O cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
-!chmod +x cloudflared
-!./cloudflared tunnel --url http://localhost:8501
