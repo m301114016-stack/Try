@@ -165,9 +165,7 @@ else:
     if st.button("🔄 重新填寫問卷"):
         st.session_state.clear()
         st.rerun()
-streamlit
-pandas
-st-gsheets-connection
+
 [connections.gsheets]
 spreadsheet = "https://docs.google.com/spreadsheets/d/1ObiBVelvCqCV9Gu0bPwGLBmQomOymAQ_wJVZO7aR7vI/edit?usp=sharing"
   
