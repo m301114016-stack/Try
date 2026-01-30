@@ -134,7 +134,32 @@ elif 1 <= st.session_state.step <= 3:
 # =====================
 else:
     st.success("✅ 問卷完成，感謝您的參與！")
+    FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdFcBZPsPdq2tDQ55WS_ELR-t0Ju44LDMY8BxOFnzf0PDihsA/viewform?usp=pp_url"
+    def submit_to_google_form(data_list):
+        for data in data_list:
+            form_data = {
+                "entry.111111": data["年級"],
+                "entry.222222": data["用藥風險"],
+                "entry.333333": data["醫師態度"],
+                "entry.444444": data["患者反應"],
+                "entry.555555": data["同儕氛圍"],
+                "entry.666666": data["堅持專業判斷分數"]
+            }
+            try:
+                requests.post(FORM_URL, data=form_data)
+            except:
+                pass
 
+    # 執行提交
+    if "submitted_to_cloud" not in st.session_state:
+        with st.spinner("數據同步中..."):
+            submit_to_google_form(st.session_state.answers)
+            st.session_state.submitted_to_cloud = True
+            st.info("📊 數據已成功存入 Google 表單後台！")
+
+    # 顯示結果
+    df = pd.DataFrame(st.session_state.answers)
+    st.dataframe(df)
     df = pd.DataFrame(st.session_state.answers)
     st.dataframe(df, use_container_width=True)
 
