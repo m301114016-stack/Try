@@ -4,7 +4,7 @@ import streamlit as st
 import pandas as pd
 import itertools
 import random
-
+import requests
 # =====================
 # App 設定
 # =====================
