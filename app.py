@@ -68,36 +68,32 @@ elif 1 <= st.session_state.step <= 3:
             st.session_state.step += 1
             st.rerun()
 
+# === 請直接覆蓋原本的 else 之後的所有內容 ===
 else:
     st.success("✅ 問卷完成，感謝您的參與！")
     df_new = pd.DataFrame(st.session_state.answers)
     
-if "submitted" not in st.session_state:
+    if "submitted" not in st.session_state:
         with st.spinner("資料同步中..."):
             try:
-                existing_data = conn.read()
-              with st.spinner("資料同步中..."):
-            try:
-                # 嘗試讀取資料，如果失敗（如空檔）則建立一個空的 DataFrame
+                # 嘗試讀取（若空表則建立標題）
                 try:
                     existing_data = conn.read()
                 except:
-                    # 如果讀不到資料（空表），則建立只有標題的 DataFrame
                     existing_data = pd.DataFrame(columns=["年級", "用藥風險", "醫師態度", "患者反應", "同儕氛圍", "分數"])
                 
-                # 合併新舊資料
+                # 合併與上傳
                 updated_df = pd.concat([existing_data, df_new], ignore_index=True)
-                
-                # 寫回雲端
                 conn.update(data=updated_df)
                 st.session_state.submitted = True
                 st.balloons()
                 st.info("📊 數據已成功存入雲端！")
             except Exception as e:
                 st.error(f"雲端存檔失敗：{e}")
-                
-    st.dataframe(df_new)
-    st.download_button("📥 下載備份", df_new.to_csv(index=False).encode("utf-8-sig"), "result.csv")
+
+    st.dataframe(df_new, use_container_width=True)
+    st.download_button("📥 下載備份 (CSV)", df_new.to_csv(index=False).encode("utf-8-sig"), "result.csv")
+    
     if st.button("🔄 重新填寫"):
         st.session_state.clear()
         st.rerun()
