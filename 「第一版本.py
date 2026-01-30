@@ -9,8 +9,6 @@ Original file is located at
 *斜體文字*
 """
 
-!pip install -q streamlit pyngrok
-
 # Commented out IPython magic to ensure Python compatibility.
 # %%writefile app.py
 # import streamlit as st
