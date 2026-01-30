@@ -72,7 +72,7 @@ else:
     st.success("✅ 問卷完成，感謝您的參與！")
     df_new = pd.DataFrame(st.session_state.answers)
     
-    if "submitted" not in st.session_state:
+if "submitted" not in st.session_state:
         with st.spinner("資料同步中..."):
             try:
                 existing_data = conn.read()
