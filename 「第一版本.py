@@ -147,5 +147,3 @@ else:
     if st.button("🔄 重新填寫"):
         st.session_state.clear()
         st.rerun()
-streamlit
-pandas
