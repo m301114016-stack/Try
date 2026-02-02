@@ -62,22 +62,31 @@ if st.session_state.step == -1:
 elif st.session_state.step == 0:
     with st.form("info_form"):
         st.subheader("第一部分：基本資料")
-        q_school = st.selectbox("您的學校", ["請選擇", "台灣大學", "陽明交通大學", "台北醫學大學","中國醫藥大學","成功大學","嘉南藥理大學", "高雄醫學大學","大仁科技大學","慈濟大學"])
-        q_school = st.text_input("1. 您就讀的學校名稱是？", placeholder="例如：台北醫學大學")
+        
+        # 1. 學校選擇（建議二選一，或分開命名）
+        q_school_select = st.selectbox("您的學校", ["請選擇", "台灣大學", "陽明交通大學", "台北醫學大學", "中國醫藥大學", "成功大學", "嘉南藥理大學", "高雄醫學大學", "大仁科技大學", "慈濟大學"])
+        q_school_other = st.text_input("1. 若選單無您的學校，請在此輸入名稱", placeholder="例如：台北醫學大學")
+        
+        # 2. 年級與經驗
         year = st.selectbox("您的年級", ["請選擇", "藥學系一年級", "藥學系二年級", "藥學系三年級", "藥學系四年級", "藥學系五年級", "藥學系六年級"])
         q_experience = st.text_input("2. 您是否有過藥局實習經驗？(有/無，若有請簡述)")
 
         if st.form_submit_button("下一步"):
-            if year == "請選擇":
+            # 統一邏輯檢查
+            if q_school_select == "請選擇" and not q_school_other:
+                st.error("⚠️ 請選擇或輸入您的學校")
+            elif year == "請選擇":
                 st.error("⚠️ 請選擇年級")
             else:
+                # 決定最終要存入的學校名稱
+                final_school = q_school_other if q_school_other else q_school_select
+                
+                # 將資料存入 session_state
                 st.session_state.year = year
-                st.session_state.step = 0.5
-                st.rerun()
-             if q_school == "請選擇":
-                st.error("⚠️ 請選擇學校")
-            else:
-                st.session_state.q_school = q_school
+                st.session_state.q_school = final_school
+                st.session_state.q_experience = q_experience
+                
+                # 跳轉
                 st.session_state.step = 0.5
                 st.rerun()
 # --- Step 0.5：填充題頁面 ---
