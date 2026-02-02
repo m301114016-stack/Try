@@ -107,6 +107,8 @@ elif st.session_state.step == 0.5:
         此問卷目的在於了解台灣藥""")
         
     if st.form_submit_button("進入情境題"):
+        st.session_state.step = -1
+                st.rerun()
             
 # --- Step 1~3：情境題 ---
 elif 1 <= st.session_state.step <= 3:
