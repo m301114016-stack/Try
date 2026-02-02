@@ -150,6 +150,7 @@ elif 1 <= st.session_state.step <= 3:
 
 # --- Step 4：完成與上傳 ---
 # --- Step 4：完成與上傳 ---
+# --- Step 4：完成與上傳 ---
 else:
     st.success("✅ 問卷完成，感謝您的參與！")
     
@@ -159,13 +160,13 @@ else:
                 # 1. 準備合併後的完整資料
                 final_data = []
                 for ans in st.session_state.answers:
-                    # 合併每一筆情境題與先前填寫的所有個人基本資料
+                    # 直接從 session_state 抓取第一頁存好的變數
                     new_row = {
                         "性別": st.session_state.get("gender", ""),
                         "年級": st.session_state.get("year", ""),
-                        "學校名稱": st.session_state.short_answers.get("學校", ""),
+                        "學校名稱": st.session_state.get("q_school", ""), # 修正：直接抓 q_school
                         "電子郵件": st.session_state.get("q_email", ""), # 確保包含 Email
-                        **ans # 展開情境題的資料（風險、態度、分數等）
+                        **ans # 展開情境題的資料
                     }
                     final_data.append(new_row)
                 
@@ -175,7 +176,7 @@ else:
                 try:
                     existing_data = conn.read()
                 except:
-                    # 如果試算表是空的，定義初始欄位名稱
+                    # 定義初始欄位名稱（確保順序與 Google 試算表一致）
                     existing_data = pd.DataFrame(columns=["性別", "年級", "學校名稱", "電子郵件", "用藥風險", "醫師態度", "患者反應", "同儕氛圍", "分數"])
                 
                 # 3. 執行更新
@@ -187,7 +188,6 @@ else:
                 st.info("📊 數據已成功存入雲端！")
             except Exception as e:
                 st.error(f"雲端存檔失敗：{e}")
-
     # 顯示填答紀錄供使用者確認
     df_display = pd.DataFrame(st.session_state.answers)
     st.dataframe(df_display, use_container_width=True)
