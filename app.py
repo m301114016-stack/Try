@@ -70,13 +70,16 @@ elif st.session_state.step == 0:
         if st.form_submit_button("下一步"):
             if year == "請選擇":
                 st.error("⚠️ 請選擇年級")
-            if  q_school == "請選擇":
-                st.error("⚠️ 請選擇學校")
             else:
                 st.session_state.year = year
                 st.session_state.step = 0.5
                 st.rerun()
-
+             if q_school == "請選擇":
+                st.error("⚠️ 請選擇學校")
+            else:
+                st.session_state.q_school = q_school
+                st.session_state.step = 0.5
+                st.rerun()
 # --- Step 0.5：填充題頁面 ---
 elif st.session_state.step == 0.5:
     # 返回按鈕放在 Form 外面
