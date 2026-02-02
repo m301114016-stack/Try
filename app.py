@@ -65,7 +65,7 @@ elif st.session_state.step == 0:
         
         # 1. 學校選擇（建議二選一，或分開命名）
         q_school_select = st.selectbox("您的學校", ["請選擇", "台灣大學", "陽明交通大學", "台北醫學大學", "中國醫藥大學", "成功大學", "嘉南藥理大學", "高雄醫學大學", "大仁科技大學", "慈濟大學"])
-        q_school_other = st.text_input("1. 若選單無您的學校，請在此輸入名稱", placeholder="例如：台北醫學大學")
+        q_school_other = st.text_input("1. 如願意收到電子禮券，請輸入email", placeholder="例如：@gmail.com")
         
         # 2. 年級與經驗
         year = st.selectbox("您的年級", ["請選擇", "藥學系一年級", "藥學系二年級", "藥學系三年級", "藥學系四年級", "藥學系五年級", "藥學系六年級"])
