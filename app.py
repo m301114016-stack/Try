@@ -149,43 +149,46 @@ elif 1 <= st.session_state.step <= 3:
             st.rerun()
 
 # --- Step 4：完成與上傳 ---
-# --- Step 4：完成與上傳 ---
-# --- Step 4：完成與上傳 ---
 else:
     st.success("✅ 問卷完成，感謝您的參與！")
     
     if "submitted" not in st.session_state:
         with st.spinner("資料同步中..."):
             try:
-                # 1. 準備合併後的完整資料
+                # 1. 定義標準欄位順序（必須跟 Google 試算表一模一樣）
+                target_columns = ["性別", "年級", "學校名稱", "電子郵件", "用藥風險", "醫師態度", "患者反應", "同儕氛圍", "分數"]
+
+                # 2. 準備資料
                 final_data = []
                 for ans in st.session_state.answers:
-                    # 直接從 session_state 抓取第一頁存好的變數
                     new_row = {
                         "性別": st.session_state.get("gender", ""),
                         "年級": st.session_state.get("year", ""),
-                        "學校名稱": st.session_state.get("q_school", ""), # 修正：直接抓 q_school
-                        "電子郵件": st.session_state.get("q_email", ""), # 確保包含 Email
-                        **ans # 展開情境題的資料
+                        "學校名稱": st.session_state.get("q_school", ""),
+                        "電子郵件": st.session_state.get("q_email", ""),
+                        **ans
                     }
                     final_data.append(new_row)
                 
+                # 3. 轉成 DataFrame 並強制排序欄位
                 df_new = pd.DataFrame(final_data)
+                df_new = df_new.reindex(columns=target_columns) # 強制對齊
 
-                # 2. 讀取與合併雲端資料
+                # 4. 讀取現有資料並合併
                 try:
                     existing_data = conn.read()
+                    # 確保舊資料也只保留這幾個欄位，避免舊的髒資料干擾
+                    existing_data = existing_data.reindex(columns=target_columns)
                 except:
-                    # 定義初始欄位名稱（確保順序與 Google 試算表一致）
-                    existing_data = pd.DataFrame(columns=["性別", "年級", "學校名稱", "電子郵件", "用藥風險", "醫師態度", "患者反應", "同儕氛圍", "分數"])
+                    existing_data = pd.DataFrame(columns=target_columns)
                 
-                # 3. 執行更新
                 updated_df = pd.concat([existing_data, df_new], ignore_index=True)
+                
+                # 5. 上傳
                 conn.update(data=updated_df)
                 
                 st.session_state.submitted = True
                 st.balloons()
-                st.info("📊 數據已成功存入雲端！")
             except Exception as e:
                 st.error(f"雲端存檔失敗：{e}")
     # 顯示填答紀錄供使用者確認
