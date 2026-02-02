@@ -152,35 +152,46 @@ elif 1 <= st.session_state.step <= 3:
             st.rerun()
 
 # --- Step 4：完成與上傳 ---
+# --- Step 4：完成與上傳 ---
 else:
     st.success("✅ 問卷完成，感謝您的參與！")
     
     if "submitted" not in st.session_state:
         with st.spinner("資料同步中..."):
             try:
-                # 合併填充題資料到每一筆紀錄
+                # 1. 準備合併後的完整資料
                 final_data = []
                 for ans in st.session_state.answers:
-                    new_row = {**ans, **st.session_state.short_answers}
+                    # 合併每一筆情境題與先前填寫的所有個人基本資料
+                    new_row = {
+                        "性別": st.session_state.get("gender", ""),
+                        "年級": st.session_state.get("year", ""),
+                        "學校名稱": st.session_state.short_answers.get("學校", ""),
+                        "電子郵件": st.session_state.get("q_email", ""), # 確保包含 Email
+                        **ans # 展開情境題的資料（風險、態度、分數等）
+                    }
                     final_data.append(new_row)
+                
                 df_new = pd.DataFrame(final_data)
 
-                # 讀取現有雲端資料
+                # 2. 讀取與合併雲端資料
                 try:
                     existing_data = conn.read()
                 except:
-                    existing_data = pd.DataFrame(columns=["性別", "學校", "年級", "email", "用藥風險", "醫師態度", "患者反應", "同儕氛圍", "分數"])
+                    # 如果試算表是空的，定義初始欄位名稱
+                    existing_data = pd.DataFrame(columns=["性別", "年級", "學校名稱", "電子郵件", "用藥風險", "醫師態度", "患者反應", "同儕氛圍", "分數"])
                 
-                # 合併與上傳
+                # 3. 執行更新
                 updated_df = pd.concat([existing_data, df_new], ignore_index=True)
                 conn.update(data=updated_df)
+                
                 st.session_state.submitted = True
                 st.balloons()
+                st.info("📊 數據已成功存入雲端！")
             except Exception as e:
                 st.error(f"雲端存檔失敗：{e}")
-                df_new = pd.DataFrame(st.session_state.answers) # 失敗時至少保留基本資料
 
-    # 顯示結果與下載
+    # 顯示填答紀錄供使用者確認
     df_display = pd.DataFrame(st.session_state.answers)
     st.dataframe(df_display, use_container_width=True)
     st.download_button("📥 下載備份 (CSV)", df_display.to_csv(index=False).encode("utf-8-sig"), "result.csv")
