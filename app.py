@@ -104,7 +104,7 @@ elif st.session_state.step == 0.5:
     with st.form("sa_form"):
         st.subheader("第二部分：情境題")
         st.write("""假設你已經成為執照在手的藥師，接下來我們會遇到一些情境，請依照你堅持原想法的   
-        此問卷目的在於了解台灣藥)
+        此問卷目的在於了解台灣藥""")
         
         if st.form_submit_button("進入情境題"):
             
