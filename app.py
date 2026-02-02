@@ -97,28 +97,17 @@ elif st.session_state.step == 0:
 # --- Step 0.5：填充題頁面 ---
 elif st.session_state.step == 0.5:
     # 返回按鈕放在 Form 外面
-    if st.button("⬅️ 返回修改年級"):
+    if st.button("⬅️ 返回修改基本資料"):
         st.session_state.step = 0
         st.rerun()
 
     with st.form("sa_form"):
-        st.subheader("第二部分：開放式填充題")
-        q_school = st.text_input("1. 您就讀的學校名稱是？", placeholder="例如：台北醫學大學")
-        q_experience = st.text_input("2. 您是否有過藥局實習經驗？(有/無，若有請簡述)")
-        q_feedback = st.text_area("3. 您對目前的藥學教育有什麼看法？")
-
+        st.subheader("第二部分：情境題")
+        st.write("""假設你已經成為執照在手的藥師，接下來我們會遇到一些情境，請依照你堅持原想法的   
+        此問卷目的在於了解台灣藥)
+        
         if st.form_submit_button("進入情境題"):
-            if not q_school:
-                st.error("⚠️ 請填寫學校名稱")
-            else:
-                st.session_state.short_answers = {
-                    "學校": q_school,
-                    "實習經驗": q_experience,
-                    "教育看法": q_feedback
-                }
-                st.session_state.step = 1
-                st.rerun()
-
+            
 # --- Step 1~3：情境題 ---
 elif 1 <= st.session_state.step <= 3:
     idx = st.session_state.step - 1
