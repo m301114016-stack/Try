@@ -101,6 +101,20 @@ else:
     if "submitted" not in st.session_state:
         with st.spinner("資料同步中..."):
             try:
+                # 合併邏輯：將填充題答案加入到每一筆情境題數據中
+                for ans in st.session_state.answers:
+                    ans.update(st.session_state.short_answers)
+                
+                # 之後再執行讀取與上傳
+                try:
+                    existing_data = conn.read()
+                except:
+                    # 記得這裡的 columns 也要加上新欄位名稱
+                    existing_data = pd.DataFrame(columns=["年級", "學校", "實習經驗", "教育看法", "用藥風險", "醫師態度", "患者反應", "同儕氛圍", "分數"])
+                
+                updated_df = pd.concat([existing_data, df_new], ignore_index=True)
+                conn.update(data=updated_df)
+            try:
                 # 嘗試讀取（若空表則建立標題）
                 try:
                     existing_data = conn.read()
