@@ -96,19 +96,25 @@ elif st.session_state.step == 0:
                 st.rerun()
 # --- Step 0.5：填充題頁面 ---
 elif st.session_state.step == 0.5:
-    # 返回按鈕放在 Form 外面
+    # 1. 返回按鈕放在 Form 外面
     if st.button("⬅️ 返回修改基本資料"):
         st.session_state.step = 0
         st.rerun()
 
+    # 2. 開啟表單
     with st.form("sa_form"):
-        st.subheader("第二部分：情境題")
-        st.write("""假設你已經成為執照在手的藥師，接下來我們會遇到一些情境，請依照你堅持原想法的   
-        此問卷目的在於了解台灣藥""")
+        st.subheader("第二部分：前言")
+        st.write("""
+        假設你已經成為執照在手的藥師，接下來我們會遇到一些情境，
+        請依照您在該情境下「堅持專業判斷」的可能性進行評分。
+        """)
         
-    if st.form_submit_button("進入情境題"):
-        st.session_state.step = -1
-                st.rerun()
+        # 3. 提交按鈕必須在 with st.form 的縮排內
+        submit_btn = st.form_submit_button("進入情境題")
+        
+        if submit_btn:
+            st.session_state.step = 1  # 跳轉到第一題情境題
+            st.rerun() # 確保與 if 對齊
             
 # --- Step 1~3：情境題 ---
 elif 1 <= st.session_state.step <= 3:
