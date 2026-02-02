@@ -10,9 +10,9 @@ st.set_page_config(page_title="台灣藥學生專業認同探討", page_icon="�
 # 2. Session 初始化
 if "initialized" not in st.session_state:
     factors = {
-        "用藥風險": ["風險1：劑量稍高", "風險2：交互作用", "風險3：藥物過敏"],
-        "醫師態度": ["高壓：醫師強勢要求", "低壓：醫師表示自負責任"],
-        "患者反應": ["負向：患者咆哮", "正向：患者焦慮"],
+        "用藥風險": ["風險1：劑量偏高", "風險2：藥物交互作用", "風險3：藥物過敏"],
+        "醫師態度": ["高壓：醫師強勢要求", "低壓：醫師表示藥師自負責任"],
+        "患者反應": ["反應1：患者咆哮", "反應2：患者焦慮", "反應3：患者焦慮" ],
         "同儕氛圍": ["孤立：建議別惹麻煩", "支持：支持你的判斷"]
     }
     all_vignettes = list(itertools.product(*factors.values()))
@@ -36,6 +36,7 @@ if st.session_state.step == -1:
     with st.form("consent_form"):
         st.subheader("研究說明與同意書")
         st.write("本問卷採匿名制，您可以隨時中止填寫。")
+        st.write("各位同學們好:此問卷目的在於了解台灣藥學生專業認同之行為，並探討相關因素之影響。我們誠摯邀請你填寫問卷")
         consent = st.checkbox("我已閱讀並同意參與本研究")
         if st.form_submit_button("開始填寫"):
             if consent:
