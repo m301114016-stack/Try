@@ -62,6 +62,7 @@ if st.session_state.step == -1:
 elif st.session_state.step == 0:
     with st.form("info_form"):
         st.subheader("第一部分：基本資料")
+        year = st.selectbox("您的學校", ["請選擇", "台灣大學", "陽明交通大學", "台北醫學大學","中國醫藥大學","成功大學","嘉南藥理大學", "高雄醫學大學","大仁科技大學","慈濟大學"])
         q_school = st.text_input("1. 您就讀的學校名稱是？", placeholder="例如：台北醫學大學")
         year = st.selectbox("您的年級", ["請選擇", "藥學系一年級", "藥學系二年級", "藥學系三年級", "藥學系四年級", "藥學系五年級", "藥學系六年級"])
         q_experience = st.text_input("2. 您是否有過藥局實習經驗？(有/無，若有請簡述)")
