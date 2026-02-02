@@ -3,7 +3,6 @@ import pandas as pd
 import itertools
 import random
 from streamlit_gsheets import GSheetsConnection
-
 # 1. 基本網頁設定
 st.set_page_config(page_title="台灣藥學生專業認同探討", page_icon="💊", layout="centered")
 
@@ -62,7 +61,8 @@ if st.session_state.step == -1:
 elif st.session_state.step == 0:
     with st.form("info_form"):
         st.subheader("第一部分：基本資料")
-        
+        # 0. 性別
+        gender = st.selectbox("您的性別", "男","女")
         # 1. 學校選擇（建議二選一，或分開命名）
         q_school_select = st.selectbox("您的學校", ["請選擇", "台灣大學", "陽明交通大學", "台北醫學大學", "中國醫藥大學", "成功大學", "嘉南藥理大學", "高雄醫學大學", "大仁科技大學", "慈濟大學"])
         q_school_other = st.text_input("1. 如願意收到電子禮券，請輸入email", placeholder="例如：@gmail.com")
@@ -74,9 +74,11 @@ elif st.session_state.step == 0:
         if st.form_submit_button("下一步"):
             # 統一邏輯檢查
             if q_school_select == "請選擇" and not q_school_other:
-                st.error("⚠️ 請選擇或輸入您的學校")
+                st.error("⚠️ 請選擇您的學校")
             elif year == "請選擇":
                 st.error("⚠️ 請選擇年級")
+            elif gender == "請選擇":
+                 st.error("⚠️ 請選擇性別")
             else:
                 # 決定最終要存入的學校名稱
                 final_school = q_school_other if q_school_other else q_school_select
