@@ -61,34 +61,37 @@ if st.session_state.step == -1:
 elif st.session_state.step == 0:
     with st.form("info_form"):
         st.subheader("第一部分：基本資料")
-        # 0. 性別
-        gender = st.selectbox("您的性別", "男","女")
-        # 1. 學校選擇（建議二選一，或分開命名）
-        q_school_select = st.selectbox("您的學校", ["請選擇", "台灣大學", "陽明交通大學", "台北醫學大學", "中國醫藥大學", "成功大學", "嘉南藥理大學", "高雄醫學大學", "大仁科技大學", "慈濟大學"])
-        q_school_other = st.text_input("1. 如願意收到電子禮券，請輸入email", placeholder="例如：@gmail.com")
         
-        # 2. 年級與經驗
+        # 0. 性別 (修正參數格式)
+        gender = st.selectbox("您的性別", ["請選擇", "男", "女", "其他/不願透露"])
+        
+        # 1. 學校選擇
+        q_school_select = st.selectbox("您的學校", ["請選擇", "台灣大學", "陽明交通大學", "台北醫學大學", "中國醫藥大學", "成功大學", "嘉南藥理大學", "高雄醫學大學", "大仁科技大學", "慈濟大學"])
+        
+        # 2. Email (建議換個變數名稱以免混淆)
+        q_email = st.text_input("1. 如願意收到電子禮券，請輸入 email", placeholder="例如：example@gmail.com")
+        
+        # 3. 年級與經驗
         year = st.selectbox("您的年級", ["請選擇", "藥學系一年級", "藥學系二年級", "藥學系三年級", "藥學系四年級", "藥學系五年級", "藥學系六年級"])
         q_experience = st.text_input("2. 您是否有過藥局實習經驗？(有/無，若有請簡述)")
 
         if st.form_submit_button("下一步"):
             # 統一邏輯檢查
-            if q_school_select == "請選擇" and not q_school_other:
+            if gender == "請選擇":
+                st.error("⚠️ 請選擇性別")
+            elif q_school_select == "請選擇":
                 st.error("⚠️ 請選擇您的學校")
             elif year == "請選擇":
                 st.error("⚠️ 請選擇年級")
-            elif gender == "請選擇":
-                 st.error("⚠️ 請選擇性別")
             else:
-                # 決定最終要存入的學校名稱
-                final_school = q_school_other if q_school_other else q_school_select
-                
                 # 將資料存入 session_state
+                st.session_state.gender = gender
                 st.session_state.year = year
-                st.session_state.q_school = final_school
+                st.session_state.q_school = q_school_select
+                st.session_state.q_email = q_email
                 st.session_state.q_experience = q_experience
                 
-                # 跳轉
+                # 跳轉至 Step 0.5 (填充題頁面)
                 st.session_state.step = 0.5
                 st.rerun()
 # --- Step 0.5：填充題頁面 ---
