@@ -46,16 +46,6 @@ elif st.session_state.step == 0:
     with st.form("info_form"):
         st.subheader("第一部分：基本資料一")
         year = st.selectbox("您的年級", ["請選擇", "藥學系一年級", "藥學系二年級", "藥學系三年級", "藥學系四年級", "藥學系五年級", "藥學系六年級", "PGY1", "PGY2"])
-        if st.form_submit_button("下一步"):
-            if year == "請選擇":
-                st.error("⚠️ 請選擇年級")
-            else:
-                st.session_state.year = year
-                st.session_state.step = 0.5
-                st.rerun()
-   with st.form("short_answer_form"):
-        st.subheader("第二部分：基本資料")
-        
         # 使用 st.text_input 建立填充題
         q_school = st.text_input("1. 您就讀的學校名稱是？", placeholder="例如：台北醫學大學")
         q_experience = st.text_input("2. 您是否有過藥局實習經驗？(有/無，若有請簡述)", placeholder="請簡短回答")
@@ -63,6 +53,15 @@ elif st.session_state.step == 0:
         # 如果需要較長的內容，可以使用 st.text_area
         q_feedback = st.text_area("3. 您對目前的藥學教育有什麼看法？", placeholder="請輸入您的意見...")
 
+        if st.form_submit_button("下一步"):
+            if year == "請選擇":
+                st.error("⚠️ 請選擇年級")
+            else:
+                st.session_state.year = year
+                st.session_state.step = 0.5
+                st.rerun()
+        
+        
         submit_sa = st.form_submit_button("進入情境題")
         if st.button("⬅️ 返回修改基本資料"):
         st.session_state.step = 0
