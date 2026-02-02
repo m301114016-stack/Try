@@ -89,7 +89,7 @@ elif st.session_state.step == 0:
                 st.session_state.year = year
                 st.session_state.q_school = q_school_select
                 st.session_state.q_email = q_email
-                st.session_state.q_experience = q_experience
+            
                 
                 # 跳轉至 Step 0.5 (填充題頁面)
                 st.session_state.step = 0.5
