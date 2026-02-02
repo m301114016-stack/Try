@@ -68,13 +68,13 @@ elif st.session_state.step == 0:
         # 1. 學校選擇
         q_school_select = st.selectbox("您的學校", ["請選擇", "台灣大學", "陽明交通大學", "台北醫學大學", "中國醫藥大學", "成功大學", "嘉南藥理大學", "高雄醫學大學", "大仁科技大學", "慈濟大學"])
         
-        # 2. Email (建議換個變數名稱以免混淆)
+        
+        # 2. 年級與經驗
+        year = st.selectbox("您的年級", ["請選擇", "藥學系一年級", "藥學系二年級", "藥學系三年級", "藥學系四年級", "藥學系五年級", "藥學系六年級"])
+        
+        # 3. Email (建議換個變數名稱以免混淆)
         q_email = st.text_input("1. 如願意收到電子禮券，請輸入 email", placeholder="例如：example@gmail.com")
         
-        # 3. 年級與經驗
-        year = st.selectbox("您的年級", ["請選擇", "藥學系一年級", "藥學系二年級", "藥學系三年級", "藥學系四年級", "藥學系五年級", "藥學系六年級"])
-        q_experience = st.text_input("2. 您是否有過藥局實習經驗？(有/無，若有請簡述)")
-
         if st.form_submit_button("下一步"):
             # 統一邏輯檢查
             if gender == "請選擇":
@@ -169,7 +169,7 @@ else:
                 try:
                     existing_data = conn.read()
                 except:
-                    existing_data = pd.DataFrame(columns=["年級", "學校", "實習經驗", "教育看法", "用藥風險", "醫師態度", "患者反應", "同儕氛圍", "分數"])
+                    existing_data = pd.DataFrame(columns=["性別", "學校", "年級", "email", "用藥風險", "醫師態度", "患者反應", "同儕氛圍", "分數"])
                 
                 # 合併與上傳
                 updated_df = pd.concat([existing_data, df_new], ignore_index=True)
