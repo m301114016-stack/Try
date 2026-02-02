@@ -5,7 +5,7 @@ import random
 from streamlit_gsheets import GSheetsConnection
 
 # 1. 基本網頁設定
-st.set_page_config(page_title="藥學生專業認同調查", page_icon="💊", layout="centered")
+st.set_page_config(page_title="台灣藥學生專業認同探討", page_icon="💊", layout="centered")
 
 # 2. Session 初始化
 if "initialized" not in st.session_state:
@@ -21,7 +21,7 @@ if "initialized" not in st.session_state:
     st.session_state.answers = []
     st.session_state.initialized = True
 
-st.title("💊 藥學生專業認同調查")
+st.title("💊台灣藥學生專業認同探討 ")
 
 # 3. 建立連線 (它會自動去 Secrets 找資料)
 try:
@@ -51,9 +51,34 @@ elif st.session_state.step == 0:
                 st.error("⚠️ 請選擇年級")
             else:
                 st.session_state.year = year
-                st.session_state.step = 1
+                st.session_state.step = 0.5
                 st.rerun()
+elif st.session_state.step == 0.5:
+    with st.form("short_answer_form"):
+        st.subheader("第二部分：開放式問題")
+        
+        # 使用 st.text_input 建立填充題
+        q_school = st.text_input("1. 您就讀的學校名稱是？", placeholder="例如：國立臺灣大學")
+        q_experience = st.text_input("2. 您是否有過藥局實習經驗？(有/無，若有請簡述)", placeholder="請簡短回答")
+        
+        # 如果需要較長的內容，可以使用 st.text_area
+        q_feedback = st.text_area("3. 您對目前的藥學教育有什麼看法？", placeholder="請輸入您的意見...")
 
+        submit_sa = st.form_submit_button("進入情境題")
+
+        if submit_sa:
+            # 檢查必填項（可選）
+            if not q_school:
+                st.error("⚠️ 請填寫學校名稱")
+            else:
+                # 存入 session_state
+                st.session_state.short_answers = {
+                    "學校": q_school,
+                    "實習經驗": q_experience,
+                    "教育看法": q_feedback
+                }
+                st.session_state.step = 1  # 進入情境題
+                st.rerun()
 elif 1 <= st.session_state.step <= 3:
     idx = st.session_state.step - 1
     v = st.session_state.vignettes[idx]
