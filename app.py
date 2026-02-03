@@ -137,7 +137,8 @@ elif 1 <= st.session_state.step <= 3:
     with st.form(f"v_form_{st.session_state.step}"):
         st.info(f"用藥風險：{v[0]}\n醫師態度：{v[1]}\n病人反應：{v[2]}\n同儕氛圍：{v[3]}")
         score = st.slider("堅持專業判斷的可能性？", 1, 10, 5)
-        score = st.slider("堅持專業判斷的可能性？", 1, 10, 5)
+        score2 = st.slider("堅持專業判斷的可能性？", 1, 10, 5)
+        score3 = st.slider("堅持專業判斷的可能性？", 1, 10, 5)
         if st.form_submit_button("下一題"):
             st.session_state.answers.append({
                 "年級": st.session_state.year, 
