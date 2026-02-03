@@ -130,17 +130,28 @@ elif 1 <= st.session_state.step <= 3:
                 st.session_state.step = 0.5
             else:
                 st.session_state.step -= 1
-                st.session_state.answers.pop() # 移除上一次存入的答案
+                if st.session_state.answers: # 確保有答案可以彈出
+                    st.session_state.answers.pop()
             st.rerun()
     
     st.subheader(f"情境題目 ({st.session_state.step} / 3)")
-    with st.form(f"v_form_{st.session_state.step}"):
+    
+    # 建立表單
+    with st.form(key=f"v_form_{st.session_state.step}"):
         st.info(f"用藥風險：{v[0]}\n醫師態度：{v[1]}\n病人反應：{v[2]}\n同儕氛圍：{v[3]}")
-        score = st.slider("堅持專業判斷的可能性？", 1, 10, 5,key=f"slider_{st.session_state.step}")
-        score2 = st.slider("堅持專業判斷的可能性？", 1, 10, 5,key=f"slider_{st.session_state.step}")
-        score3 = st.slider("堅持專業判斷的可能性？", 1, 10, 5,key=f"slider_{st.session_state.step}")
         
-        if st.form_submit_button("下一題"):
+        # ✅ 只需一個 Slider，Key 會隨著 step 變化 (slider_1, slider_2, slider_3)
+        score = st.slider(
+            "堅持專業判斷的可能性？", 
+            min_value=1, 
+            max_value=10, 
+            value=5,
+            key=f"slider_val_{st.session_state.step}"
+        )
+        
+        # ✅ 提交按鈕
+        submit_label = "下一題" if st.session_state.step < 3 else "提交問卷"
+        if st.form_submit_button(submit_label):
             st.session_state.answers.append({
                 "年級": st.session_state.year, 
                 "用藥風險": v[0], 
