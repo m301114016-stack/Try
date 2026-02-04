@@ -114,7 +114,7 @@ elif 1 <= st.session_state.step <= 5:
     with st.form(key=f"v_form_{st.session_state.step}"):
         # ✅ 使用 f""" 三引號來包圍多行文字
         st.info(f"""
-【當前情境】
+【當前情境】 
 用藥風險：{v[0]}  
 醫師態度：{v[1]}  
 病人反應：{v[2]}  
@@ -124,15 +124,15 @@ elif 1 <= st.session_state.step <= 5:
         st.write("---")
         
         st.write("1. 您堅持專業判斷的可能性？")
-        score_1 = st.slider("Q1", 1, 10, 5, key=f"q1_s{st.session_state.step}", label_visibility="collapsed")
+        score_1 = st.slider("Q1", -5, 5, 0, key=f"q1_s{st.session_state.step}", label_visibility="collapsed")
         slider_label()
         
         st.write("2. 您對此處方安全性感到擔憂的程度？")
-        score_2 = st.slider("Q2", 1, 10, 5, key=f"q2_s{st.session_state.step}", label_visibility="collapsed")
+        score_2 = st.slider("Q2", -5, 5, 0, key=f"q2_s{st.session_state.step}", label_visibility="collapsed")
         slider_label()
         
         st.write("3. 您承受此職場壓力的負擔感？")
-        score_3 = st.slider("Q3", 1, 10, 5, key=f"q3_s{st.session_state.step}", label_visibility="collapsed")
+        score_3 = st.slider("Q3", -5, 5, 0, key=f"q3_s{st.session_state.step}", label_visibility="collapsed")
         slider_label()
         
         if st.form_submit_button("下一題" if st.session_state.step < 5 else "提交問卷"):
