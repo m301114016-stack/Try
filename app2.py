@@ -75,6 +75,13 @@ elif st.session_state.step == 0:
         # 3. Email (建議換個變數名稱以免混淆)
         q_email = st.text_input("1. 如願意收到電子禮券，請輸入 email", placeholder="例如：example@gmail.com")
         
+        🌟 新增：複選題 (例如：未來的執業意向)
+        # 使用 multiselect 讓使用者可以勾選多個選項
+        q_interests = st.multiselect(
+            "4. 您未來感興趣的執業領域是？(可多選)",
+            ["醫院藥局", "社區藥局", "藥廠", "診所", "公部門", "學術研究", "還在考慮中"]
+
+        
         if st.form_submit_button("下一步"):
             # 統一邏輯檢查
             if gender == "請選擇":
@@ -83,13 +90,15 @@ elif st.session_state.step == 0:
                 st.error("⚠️ 請選擇您的學校")
             elif year == "請選擇":
                 st.error("⚠️ 請選擇年級")
+            elif not q_interests = 
+                st.error("⚠️ 請至少選擇一個感興趣的領域")
             else:
                 # 將資料存入 session_state
                 st.session_state.gender = gender
                 st.session_state.year = year
                 st.session_state.q_school = q_school_select
                 st.session_state.q_email = q_email
-            
+                st.session_state.q_interests = ", ".join(q_interests) # 將串列轉為字串方便存入試算表
                 
                 # 跳轉至 Step 0.5 (填充題頁面)
                 st.session_state.step = 0.5
