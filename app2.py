@@ -90,7 +90,7 @@ elif st.session_state.step == 0:
                 st.error("⚠️ 請選擇您的學校")
             elif year == "請選擇":
                 st.error("⚠️ 請選擇年級")
-            elif not q_interests = 
+            elif not q_interests : 
                 st.error("⚠️ 請至少選擇一個感興趣的領域")
             else:
                 # 將資料存入 session_state
