@@ -79,7 +79,7 @@ elif st.session_state.step == 0:
         # 使用 multiselect 讓使用者可以勾選多個選項
         q_interests = st.multiselect(
             "4. 您未來感興趣的執業領域是？(可多選)",
-            ["醫院藥局", "社區藥局", "藥廠", "診所", "公部門", "學術研究", "還在考慮中"]
+            ["醫院藥局", "社區藥局", "藥廠", "診所", "公部門", "學術研究", "還在考慮中"])
 
         
         if st.form_submit_button("下一步"):
