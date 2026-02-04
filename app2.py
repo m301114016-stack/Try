@@ -169,7 +169,14 @@ elif 1 <= st.session_state.step <= 3:
             "3. 您承受此職場壓力的負擔感？", 1, 10, 5, 
             key=f"q3_s{st.session_state.step}"
         )
-        
+        def slider_label():
+    c1, c2 = st.columns([1, 1])
+    c1.caption("⬅️ 非常不可能")
+    c2.markdown("<p style='text-align: right; color: gray; font-size: small;'>非常可能 ➡️</p>", unsafe_allow_html=True)
+
+    # 使用時：
+    score = st.slider(...)
+    slider_label() # 直接呼叫即可
         # 提交按鈕
         submit_label = "下一題" if st.session_state.step < 3 else "提交問卷"
         if st.form_submit_button(submit_label):
