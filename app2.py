@@ -3,23 +3,12 @@ import pandas as pd
 import itertools
 import random
 from streamlit_gsheets import GSheetsConnection
-import uuid # 記得在最上方 import
+import uuid
 
-if "initialized" not in st.session_state:
-    # ... 原有的 factors 與 all_vignettes ...
-    st.session_state.vignettes = random.sample(all_vignettes, 5)
-    
-    # 🌟 新增：為這一份問卷生成唯一的 8 位元代碼
-    st.session_state.response_id = str(uuid.uuid4())[:8].upper() 
-    
-    st.session_state.step = -1
-    st.session_state.answers = []
-    st.session_state.initialized = True
-    
 # 1. 基本網頁設定
 st.set_page_config(page_title="台灣藥學生專業認同探討", page_icon="💊", layout="centered")
 
-# 2. Session 初始化
+# 2. Session 初始化 (確保邏輯順序：定義組合 -> 生成代碼 -> 抽樣)
 if "initialized" not in st.session_state:
     factors = {
         "用藥風險": ["風險1：劑量偏高", "風險2：藥物交互作用", "風險3：藥物過敏"],
@@ -27,10 +16,15 @@ if "initialized" not in st.session_state:
         "病人反應": ["反應1：病人咆哮", "反應2：病人焦慮", "反應3：病人煩躁" ],
         "同儕氛圍": ["孤立：建議別惹麻煩", "支持：支持你的判斷"]
     }
+    # 先產生所有可能的情境組合
     all_vignettes = list(itertools.product(*factors.values()))
     
-    # ✅ 修正處：將抽樣數量改為 5，解決「資料不足」報錯
+    # 生成唯一填答代碼
+    st.session_state.response_id = str(uuid.uuid4())[:8].upper() 
+    
+    # 從組合中隨機抽取 5 題情境
     st.session_state.vignettes = random.sample(all_vignettes, 5) 
+    
     st.session_state.step = -1
     st.session_state.answers = []
     st.session_state.initialized = True
@@ -54,21 +48,11 @@ def slider_label():
 if st.session_state.step == -1:
     with st.form("consent_form"):
         st.subheader("研究說明與同意書")
-        st.write("""各位同學們好:   
-        此問卷目的在於了解台灣藥學生專業認同之行為，並探討相關因素之影響。     
-                    我們誠摯邀請你填寫問卷，整份問卷約需花費你10分鐘的時間。  
-                    本研究已通過台北醫學大學暨附屬醫院聯合人體研究倫理委員會核准，您的資料將視為機密且身分將被保密。     
-                    若您在研究過程中有任何對本研究之疑慮，可隨時要求修正、刪除資料，亦可以選擇退出研究。     
-                    再次感謝您的協助。     
-                    問卷填寫完後，若民有意願領取數位禮券，請留下您常用的email，經研究人員確定為有效問卷後，將依前200名填寫順序寄送。""")
+        st.write("""各位同學們好: 此問卷目的在於了解台灣藥學生專業認同之行為，並探討相關因素之影響。
+我們誠摯邀請你填寫問卷，整份問卷約需花費你10分鐘的時間。本研究已通過台北醫學大學暨附屬醫院聯合人體研究倫理委員會核准，您的資料將視為機密且身分將被保密。若您在研究過程中有任何對本研究之疑慮，可隨時要求修正、刪除資料，亦可以選擇退出研究。再次感謝您的協助。問卷填寫完後，若民有意願領取數位禮券，請留下您常用的email，經研究人員確定為有效問卷後，將依前200名填寫順序寄送。""")
         st.write("本問卷採匿名制，您可以隨時中止填寫。")
-        st.write("""台北醫學大學藥學系碩士班                                              
-        學生:張嘉真                                
-        指導教授: 張雅惠 副教授""")
-        st.write("""如需額外相關資訊或有任何問題，歡迎與我們聯繫。                                   
-        聯絡人:張嘉真                              
-        連絡電話:(02)2376-1661#6177         
-        Email:m301114016@tmu.edu.tw""")
+        st.write("""台北醫學大學藥學系碩士班\n學生:張嘉真\n指導教授: 張雅惠 副教授""")
+        st.write("""如需額外相關資訊或有任何問題，歡迎與我們聯繫。\n聯絡人:張嘉真\n連絡電話:(02)2376-1661#6177\nEmail:m301114016@tmu.edu.tw""")
         consent = st.checkbox("我已閱讀並同意參與本研究")
         if st.form_submit_button("開始填寫"):
             if consent:
@@ -133,7 +117,13 @@ elif 1 <= st.session_state.step <= 5:
         slider_label()
         
         if st.form_submit_button("下一題" if st.session_state.step < 5 else "提交問卷"):
-            common = {"性別": st.session_state.gender, "年級": st.session_state.year, "學校": st.session_state.q_school, "領域": st.session_state.q_interests, "風險": v[0], "態度": v[1], "反應": v[2], "氛圍": v[3]}
+            common = {
+                "性別": st.session_state.gender, 
+                "年級": st.session_state.year, 
+                "學校": st.session_state.q_school, 
+                "領域": st.session_state.q_interests, 
+                "風險": v[0], "態度": v[1], "反應": v[2], "氛圍": v[3]
+            }
             st.session_state.answers.append({**common, "題目": "堅持判斷", "分數": score_1})
             st.session_state.answers.append({**common, "題目": "安全擔憂", "分數": score_2})
             st.session_state.answers.append({**common, "題目": "職場壓力", "分數": score_3})
@@ -142,53 +132,9 @@ elif 1 <= st.session_state.step <= 5:
 
 # --- Step 6：完成與上傳 ---
 else:
-    # 🌟 顯示專屬代碼給受試者，增加正式感
     st.success(f"✅ 問卷完成，感謝參與！您的填答代碼為：{st.session_state.response_id}")
     
     if "submitted" not in st.session_state:
         with st.spinner("資料同步中..."):
             try:
-                # 1. 定義標準欄位順序 (務必與 Google Sheets 第一列完全一致)
-                target_cols = [
-                    "填答代碼", "性別", "年級", "學校", "領域", 
-                    "電子郵件", "風險", "態度", "反應", "氛圍", "題目", "分數"
-                ]
-
-                # 2. 準備資料：將 response_id 與基本資料、情境答案合併
-                final_data = []
-                for ans in st.session_state.answers:
-                    # 合併 session_state 中的全域變數與 ans 中的情境變數
-                    new_row = {
-                        "填答代碼": st.session_state.response_id,
-                        "性別": st.session_state.get("gender", ""),
-                        "年級": st.session_state.get("year", ""),
-                        "學校": st.session_state.get("q_school", ""),
-                        "領域": st.session_state.get("q_interests", ""),
-                        "電子郵件": st.session_state.get("q_email", ""),
-                        # ans 本身已包含：風險, 態度, 反應, 氛圍, 題目, 分數
-                        **ans 
-                    }
-                    final_data.append(new_row)
-                
-                # 3. 轉成 DataFrame 並強制排序欄位
-                df_new = pd.DataFrame(final_data)
-                df_new = df_new.reindex(columns=target_cols)
-
-                # 4. 讀取現有資料並合併
-                try:
-                    # 使用 st.connection 的方式讀取現有表單
-                    existing_data = conn.read()
-                    # 確保舊資料與新資料欄位對齊
-                    updated_df = pd.concat([existing_data, df_new], ignore_index=True)
-                except Exception:
-                    # 若表單為空或讀取失敗，則直接使用新資料
-                    updated_df = df_new
-                
-                # 5. 上傳更新後的內容
-                conn.update(data=updated_df)
-                
-                st.session_state.submitted = True
-                st.balloons()
-                
-            except Exception as e:
-                st.error(f"雲端存檔失敗，請確認 Secrets 設定或試算表欄位。錯誤：{e}")
+                # 1. 定義標準
