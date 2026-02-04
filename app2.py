@@ -3,7 +3,19 @@ import pandas as pd
 import itertools
 import random
 from streamlit_gsheets import GSheetsConnection
+import uuid # 記得在最上方 import
 
+if "initialized" not in st.session_state:
+    # ... 原有的 factors 與 all_vignettes ...
+    st.session_state.vignettes = random.sample(all_vignettes, 5)
+    
+    # 🌟 新增：為這一份問卷生成唯一的 8 位元代碼
+    st.session_state.response_id = str(uuid.uuid4())[:8].upper() 
+    
+    st.session_state.step = -1
+    st.session_state.answers = []
+    st.session_state.initialized = True
+    
 # 1. 基本網頁設定
 st.set_page_config(page_title="台灣藥學生專業認同探討", page_icon="💊", layout="centered")
 
@@ -128,34 +140,55 @@ elif 1 <= st.session_state.step <= 5:
             st.session_state.step += 1
             st.rerun()
 
-# --- Step 6：存檔與結尾 ---
+# --- Step 6：完成與上傳 ---
 else:
-    st.success("✅ 問卷完成，感謝參與！")
+    # 🌟 顯示專屬代碼給受試者，增加正式感
+    st.success(f"✅ 問卷完成，感謝參與！您的填答代碼為：{st.session_state.response_id}")
+    
     if "submitted" not in st.session_state:
-        with st.spinner("資料上傳中..."):
+        with st.spinner("資料同步中..."):
             try:
-                # 重新定義欄位以包含所有資訊
-                target_cols = ["性別", "年級", "學校", "領域", "電子郵件", "風險", "態度", "反應", "氛圍", "題目", "分數"]
+                # 1. 定義標準欄位順序 (務必與 Google Sheets 第一列完全一致)
+                target_cols = [
+                    "填答代碼", "性別", "年級", "學校", "領域", 
+                    "電子郵件", "風險", "態度", "反應", "氛圍", "題目", "分數"
+                ]
+
+                # 2. 準備資料：將 response_id 與基本資料、情境答案合併
                 final_data = []
                 for ans in st.session_state.answers:
-                    final_data.append({**ans, "電子郵件": st.session_state.get("q_email", "")})
+                    # 合併 session_state 中的全域變數與 ans 中的情境變數
+                    new_row = {
+                        "填答代碼": st.session_state.response_id,
+                        "性別": st.session_state.get("gender", ""),
+                        "年級": st.session_state.get("year", ""),
+                        "學校": st.session_state.get("q_school", ""),
+                        "領域": st.session_state.get("q_interests", ""),
+                        "電子郵件": st.session_state.get("q_email", ""),
+                        # ans 本身已包含：風險, 態度, 反應, 氛圍, 題目, 分數
+                        **ans 
+                    }
+                    final_data.append(new_row)
                 
-                df_new = pd.DataFrame(final_data).reindex(columns=target_cols)
-                
-                # 讀取並合併（若試算表為空則建立新表）
+                # 3. 轉成 DataFrame 並強制排序欄位
+                df_new = pd.DataFrame(final_data)
+                df_new = df_new.reindex(columns=target_cols)
+
+                # 4. 讀取現有資料並合併
                 try:
-                    existing = conn.read()
-                    updated_df = pd.concat([existing, df_new], ignore_index=True)
-                except:
+                    # 使用 st.connection 的方式讀取現有表單
+                    existing_data = conn.read()
+                    # 確保舊資料與新資料欄位對齊
+                    updated_df = pd.concat([existing_data, df_new], ignore_index=True)
+                except Exception:
+                    # 若表單為空或讀取失敗，則直接使用新資料
                     updated_df = df_new
                 
+                # 5. 上傳更新後的內容
                 conn.update(data=updated_df)
+                
                 st.session_state.submitted = True
                 st.balloons()
+                
             except Exception as e:
-                st.error(f"雲端存檔失敗：{e}")
-    
-    st.dataframe(pd.DataFrame(st.session_state.answers), use_container_width=True)
-    if st.button("🔄 重新填寫"):
-        st.session_state.clear()
-        st.rerun()
+                st.error(f"雲端存檔失敗，請確認 Secrets 設定或試算表欄位。錯誤：{e}")
