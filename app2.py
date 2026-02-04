@@ -132,6 +132,13 @@ elif 1 <= st.session_state.step <= 3:
     idx = st.session_state.step - 1
     v = st.session_state.vignettes[idx]
     
+    # 定義顯示標籤的函數（放在迴圈內或最上方皆可，確保縮排正確）
+    def slider_label():
+        c1, c2 = st.columns([1, 1])
+        c1.caption("⬅️ 非常不可能")
+        # 使用 HTML 語法讓「非常可能」靠右對齊
+        c2.markdown("<p style='text-align: right; color: gray; font-size: small;'>非常可能 ➡️</p>", unsafe_allow_html=True)
+
     # 導航欄：顯示進度與返回
     col1, col2 = st.columns([1, 5])
     with col1:
@@ -141,55 +148,60 @@ elif 1 <= st.session_state.step <= 3:
             else:
                 st.session_state.step -= 1
                 if st.session_state.answers:
-                    # 因為一頁存了三筆，返回時要刪除最後三筆
+                    # 返回時刪除上一頁存入的三題紀錄
                     st.session_state.answers = st.session_state.answers[:-3] 
             st.rerun()
     
     st.subheader(f"情境題目 ({st.session_state.step} / 3)")
     
     with st.form(key=f"v_form_{st.session_state.step}"):
-        # 顯示情境描述
         st.info(f"【當前情境】\n用藥風險：{v[0]}\n醫師態度：{v[1]}\n病人反應：{v[2]}\n同儕氛圍：{v[3]}")
         
         st.write("---")
-        # 問題 1
-        score_1 = st.slider(
-            "1. 您堅持專業判斷的可能性？", 1, 10, 5, 
-            key=f"q1_s{st.session_state.step}"
-        )
-        
-        # 問題 2
-        score_2 = st.slider(
-            "2. 您對此處方安全性感到擔憂的程度？", 1, 10, 5, 
-            key=f"q2_s{st.session_state.step}"
-        )
-        
-        # 問題 3
-        score_3 = st.slider(
-            "3. 您承受此職場壓力的負擔感？", 1, 10, 5, 
-            key=f"q3_s{st.session_state.step}"
-        )
-        def slider_label():
-            c1, c2 = st.columns([1, 1])
-            c1.caption("⬅️ 非常不可能")
-            c2.markdown("<p style='text-align: right; color: gray; font-size: small;'>非常可能 ➡️</p>", unsafe_allow_html=True)
 
-    # 使用時：
-        score = st.slider(...)
-        slider_label() # 直接呼叫即可
+        # 問題 1
+        st.write("1. 您堅持專業判斷的可能性？")
+        score_1 = st.slider(
+            "堅持判斷", 1, 10, 5, 
+            key=f"q1_s{st.session_state.step}",
+            label_visibility="collapsed"
+        )
+        slider_label() # 呼叫標籤
+        
+        st.write("---")
+        # 問題 2
+        st.write("2. 您對此處方安全性感到擔憂的程度？")
+        score_2 = st.slider(
+            "安全擔憂", 1, 10, 5, 
+            key=f"q2_s{st.session_state.step}",
+            label_visibility="collapsed"
+        )
+        slider_label() # 呼叫標籤
+        
+        st.write("---")
+        # 問題 3
+        st.write("3. 您承受此職場壓力的負擔感？")
+        score_3 = st.slider(
+            "職場壓力", 1, 10, 5, 
+            key=f"q3_s{st.session_state.step}",
+            label_visibility="collapsed"
+        )
+        slider_label() # 呼叫標籤
+        
         # 提交按鈕
         submit_label = "下一題" if st.session_state.step < 3 else "提交問卷"
         if st.form_submit_button(submit_label):
-            # 定義共同欄位
             common_info = {
-                "年級": st.session_state.year, 
+                "性別": st.session_state.get("gender", ""),
+                "年級": st.session_state.get("year", ""), 
+                "學校名稱": st.session_state.get("q_school", ""),
                 "用藥風險": v[0], 
                 "醫師態度": v[1], 
                 "病人反應": v[2], 
                 "同儕氛圍": v[3]
             }
             
-            # 將三題答案存入（分別加上問題標籤）
+            # 將三題答案存入
             st.session_state.answers.append({**common_info, "題目": "堅持判斷", "分數": score_1})
             st.session_state.answers.append({**common_info, "題目": "安全擔憂", "分數": score_2})
             st.session_state.answers.append({**common_info, "題目": "職場壓力", "分數": score_3})
