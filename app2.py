@@ -152,18 +152,20 @@ elif 1 <= st.session_state.step <= 5:
 # --- Step 6：完成與上傳 ---
 # --- Step 6：完成與上傳 ---
 else:
+    # 顯示完成訊息與代碼
     st.success(f"✅ 問卷完成，感謝參與！您的填答代碼為：{st.session_state.response_id}")
     
+    # 執行資料上傳邏輯
     if "submitted" not in st.session_state:
         with st.spinner("資料同步中..."):
             try:
-                # ✅ 這裡的縮排必須對齊 try 內部
+                # 1. 定義標準欄位順序
                 target_cols = [
                     "填答代碼", "性別", "年級", "學校", "領域", 
                     "電子郵件", "風險", "態度", "反應", "氛圍", "題目", "分數"
                 ]
 
-                # 準備資料
+                # 2. 準備資料
                 final_data = []
                 for ans in st.session_state.answers:
                     new_row = {
@@ -177,29 +179,30 @@ else:
                     }
                     final_data.append(new_row)
                 
-                # 轉成 DataFrame 並強制排序欄位
+                # 3. 轉成 DataFrame 並排序欄位
                 df_new = pd.DataFrame(final_data)
                 df_new = df_new.reindex(columns=target_cols)
 
-                # 讀取並合併
+                # 4. 讀取並合併
                 try:
                     existing_data = conn.read()
                     updated_df = pd.concat([existing_data, df_new], ignore_index=True)
                 except Exception:
                     updated_df = df_new
                 
-                # 上傳更新內容
+                # 5. 上傳至 Google Sheets
                 conn.update(data=updated_df)
+                
+                # 標記為已提交並施放氣球
                 st.session_state.submitted = True
                 st.balloons()
                 
             except Exception as e:
-                # ✅ 這裡的縮排必須對齊 except 內部
                 st.error(f"雲端存檔失敗，請確認試算表欄位。錯誤：{e}")
 
-    st.write("### 您的填答摘要預覽")
-    st.dataframe(pd.DataFrame(st.session_state.answers), use_container_width=True)
-    
+    # --- 這裡移除了原本的 st.write("### 您的填答摘要預覽") 與 st.dataframe(...) ---
+
+    # 僅保留重新填寫按鈕（若需要完全結束，也可以將此按鈕移除）
     if st.button("🔄 重新填寫"):
         st.session_state.clear()
         st.rerun()
