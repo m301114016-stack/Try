@@ -75,7 +75,7 @@ elif st.session_state.step == 0:
         # 3. Email (建議換個變數名稱以免混淆)
         q_email = st.text_input("1. 如願意收到電子禮券，請輸入 email", placeholder="例如：example@gmail.com")
         
-        🌟 新增：複選題 (例如：未來的執業意向)
+        
         # 使用 multiselect 讓使用者可以勾選多個選項
         q_interests = st.multiselect(
             "4. 您未來感興趣的執業領域是？(可多選)",
