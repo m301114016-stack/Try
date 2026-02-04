@@ -112,7 +112,11 @@ elif 1 <= st.session_state.step <= 5:
     
     st.subheader(f"情境題目 ({int(st.session_state.step)} / 5)")
     with st.form(key=f"v_form_{st.session_state.step}"):
-        st.info(f"【當前情境】\n用藥風險：{v[0]}\n醫師態度：{v[1]}\n病人反應：{v[2]}\n同儕氛圍：{v[3]}")
+        st.info(f"【當前情境】
+        用藥風險：{v[0]} 
+        醫師態度：{v[1]} 
+        病人反應：{v[2]} 
+        同儕氛圍：{v[3]}")
         
         st.write("1. 您堅持專業判斷的可能性？")
         score_1 = st.slider("Q1", 1, 10, 5, key=f"q1_s{st.session_state.step}", label_visibility="collapsed")
