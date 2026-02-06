@@ -137,13 +137,14 @@ elif 1 <= st.session_state.step <= 5:
 
 # --- Step 6：上傳與完成 ---
 # --- Step 6：上傳與完成 ---
+# --- Step 6：上傳與完成 ---
 else:
     st.success(f"✅ 問卷完成！您的填答代碼為：{st.session_state.response_id}")
     
     if "submitted" not in st.session_state:
         with st.spinner("傳送數據至雲端..."):
             try:
-                # 1. 定義最終希望呈現在 Excel 的欄位順序 (Header)
+                # 1. 這裡定義的是你「唯一想要」出現在 Excel 的欄位
                 target_cols = [
                     "填答代碼", "性別", "年齡", "教育程度", "電子郵件", 
                     "症狀", "壓力", "經驗", "醫囑", "便利性", "維面", "分數"
@@ -154,24 +155,27 @@ else:
                     new_row = {
                         "填答代碼": st.session_state.response_id,
                         "性別": st.session_state.gender,
-                        "年齡": st.session_state.age,      # 修正：名稱需與 target_cols 一致
-                        "教育程度": st.session_state.edu,  # 修正：名稱需與 target_cols 一致
+                        "年齡": st.session_state.age,
+                        "教育程度": st.session_state.edu,
                         "電子郵件": st.session_state.q_email,
                         **ans 
                     }
                     final_data.append(new_row)
                 
-                # 2. 轉換為 DataFrame 並依照目標欄位排序
-                df_new = pd.DataFrame(final_data)
-                df_new = df_new.reindex(columns=target_cols)
+                df_new = pd.DataFrame(final_data).reindex(columns=target_cols)
 
-                # 3. 讀取並合併 Google Sheets
-                # 提醒：確保你的 Google Sheet 第一列 (Header) 也是這 12 個名稱
+                # 2. 讀取並合併時進行過濾
                 try:
                     existing_data = conn.read()
+                    # 【關鍵修正】：強制讓舊資料也只留下我們要的欄位，丟棄舊的「年級、學校」等
+                    existing_data = existing_data.reindex(columns=target_cols)
                     updated_df = pd.concat([existing_data, df_new], ignore_index=True)
-                except:
-                    updated_df = df_new # 如果試算表是空的，就直接用新的
+                except Exception:
+                    # 如果讀取失敗（例如表單是空的），就直接使用新資料
+                    updated_df = df_new
+                
+                # 3. 清除空值（如果有舊資料產生的空列）並上傳
+                updated_df = updated_df.dropna(how='all') 
                 
                 conn.update(data=updated_df)
                 
