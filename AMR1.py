@@ -136,15 +136,16 @@ elif 1 <= st.session_state.step <= 5:
             st.rerun()
 
 # --- Step 6：上傳與完成 ---
+# --- Step 6：上傳與完成 ---
 else:
     st.success(f"✅ 問卷完成！您的填答代碼為：{st.session_state.response_id}")
     
     if "submitted" not in st.session_state:
         with st.spinner("傳送數據至雲端..."):
             try:
-                # 欄位重新對齊
+                # 1. 定義最終希望呈現在 Excel 的欄位順序 (Header)
                 target_cols = [
-                    "填答代碼", "性別", "年齡","教育程度", "電子郵件", 
+                    "填答代碼", "性別", "年齡", "教育程度", "電子郵件", 
                     "症狀", "壓力", "經驗", "醫囑", "便利性", "維面", "分數"
                 ]
 
@@ -153,18 +154,25 @@ else:
                     new_row = {
                         "填答代碼": st.session_state.response_id,
                         "性別": st.session_state.gender,
-                        "年級_年齡": st.session_state.age,
-                        "學校_教育": st.session_state.edu,
+                        "年齡": st.session_state.age,      # 修正：名稱需與 target_cols 一致
+                        "教育程度": st.session_state.edu,  # 修正：名稱需與 target_cols 一致
                         "電子郵件": st.session_state.q_email,
                         **ans 
                     }
                     final_data.append(new_row)
                 
-                df_new = pd.DataFrame(final_data).reindex(columns=target_cols)
+                # 2. 轉換為 DataFrame 並依照目標欄位排序
+                df_new = pd.DataFrame(final_data)
+                df_new = df_new.reindex(columns=target_cols)
 
-                # 讀取並合併 Google Sheets
-                existing_data = conn.read()
-                updated_df = pd.concat([existing_data, df_new], ignore_index=True)
+                # 3. 讀取並合併 Google Sheets
+                # 提醒：確保你的 Google Sheet 第一列 (Header) 也是這 12 個名稱
+                try:
+                    existing_data = conn.read()
+                    updated_df = pd.concat([existing_data, df_new], ignore_index=True)
+                except:
+                    updated_df = df_new # 如果試算表是空的，就直接用新的
+                
                 conn.update(data=updated_df)
                 
                 st.session_state.submitted = True
