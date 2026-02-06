@@ -48,8 +48,12 @@ if st.session_state.step == -1:
         st.subheader("研究說明與同意書")
         st.write("""
         這是一項關於「大眾對抗生素使用決策」的學術調查。
-        我們希望了解在不同生活情境下，民眾對於使用抗生素的真實想法。
-        本問卷採匿名制，資料僅供學術分析使用，請安心填寫。
+        我們希望了解在不同生活情境下，民眾對於使用抗生素的真實想法。 
+        我們誠摯邀請你填寫問卷，整份問卷約需花費你10分鐘的時間。  
+        本研究已通過台北醫學大學暨附屬醫院聯合人體研究倫理委員會核准，您的資料將視為機密且身分將被保密。  
+        若您在研究過程中有任何對本研究之疑慮，可隨時要求修正、刪除資料，亦可以選擇退出研究。  
+        再次感謝您的協助。  
+        問卷填寫完後，若您有意願領取數位禮券，請留下您常用的email，經研究人員確定為有效問卷後，將依前200名填寫順序寄送。
         """)
         consent = st.checkbox("我已閱讀並同意參與本研究")
         if st.form_submit_button("開始填寫"):
@@ -64,9 +68,9 @@ elif st.session_state.step == 0:
     with st.form("info_form"):
         st.subheader("第一部分：基本資料")
         gender = st.selectbox("您的性別", ["請選擇", "男", "女", "其他"])
-        age = st.selectbox("您的年齡層", ["請選擇", "20歲以下", "21-30歲", "31-40歲", "41-50歲", "51歲以上"])
+        age = st.selectbox("您的年齡層", ["請選擇", "20歲以下", "21-30歲", "31-40歲", "41-50歲", "51-60歲","61-70歲","71歲-80歲","81歲-90歲","91歲以上" ])
         edu = st.selectbox("您的教育程度", ["請選擇", "高中職以下", "大專院校", "研究所及以上"])
-        q_email = st.text_input("如願意參加抽獎，請輸入 email", placeholder="example@gmail.com")
+        q_email = st.text_input("若您有意願領取數位禮券，請輸入 email", placeholder="example@gmail.com")
 
         if st.form_submit_button("下一步"):
             if "請選擇" in [gender, age, edu]:
