@@ -75,7 +75,7 @@ if st.session_state.step == -1:
 elif st.session_state.step == 0:
     with st.form("info_form"):
         st.subheader("第一部分：基本資料")
-        gender = st.selectbox("您的性別", ["請選擇", "男", "女", "其他"])
+        gender = st.selectbox("您的性別", ["請選擇", "男", "女", "其他/不願透漏"])
         age = st.selectbox("您的年齡層", ["請選擇", "20歲以下", "21-30歲", "31-40歲", "41-50歲", "51-60歲","61-70歲","71歲-80歲","81歲-90歲","91歲以上" ])
         edu = st.selectbox("您的教育程度", ["請選擇", "高中職以下", "大專院校", "研究所及以上"])
         q_email = st.text_input("若您有意願領取數位禮券，請輸入 email", placeholder="example@gmail.com")
