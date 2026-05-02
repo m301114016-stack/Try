@@ -1,70 +1,69 @@
-
 import streamlit as st
 import random
 import time
 
-# 設定頁面與標題
-st.set_page_config(page_title="天選之人：骰子對決", page_icon="🎲")
+# Page Configuration
+st.set_page_config(page_title="The Chosen One: Dice Showdown", page_icon="🎲")
 
-# 初始化玩家清單
+# Initialize session state for players
 if 'players' not in st.session_state:
     st.session_state.players = {}
 
-st.title("🎲 天選之人：骰子對決")
-st.write("掃描 QR Code 加入，由點數最大者勝出！")
+st.title("🎲 The Chosen One: Dice Showdown")
+st.write("Scan the QR code to join. The highest roll wins!")
 
-# --- 側邊欄：加入區域 ---
+# --- Sidebar: Join Section ---
 with st.sidebar:
-    st.header("📲 參與者進入")
-    name = st.text_input("輸入你的暱稱", placeholder="例如：學生 A")
-    if st.button("點我加入"):
+    st.header("📲 Join Game")
+    name = st.text_input("Enter your nickname", placeholder="e.g., Researcher Smith")
+    if st.button("Join Now"):
         if name:
             if name not in st.session_state.players:
                 st.session_state.players[name] = 0
-                st.success(f"【{name}】已成功登錄！")
+                st.success(f"Welcome, {name}!")
             else:
-                st.warning("這個名字已經有人用了喔！")
+                st.warning("This name is already taken!")
     
     st.divider()
-    if st.button("重置所有資料", type="secondary"):
+    if st.button("Reset All Data", type="secondary"):
         st.session_state.players = {}
         st.rerun()
 
-# --- 主畫面：對決區域 ---
+# --- Main Area: Battle Zone ---
 if not st.session_state.players:
-    st.info("目前還沒有人加入，請在側邊欄輸入暱稱。")
+    st.info("Waiting for participants... Please join via the sidebar.")
 else:
-    st.subheader(f"目前候選人 ({len(st.session_state.players)} 位)")
-    # 顯示目前在場名單
+    st.subheader(f"Current Candidates ({len(st.session_state.players)})")
+    # Display the list of players
     player_names = ", ".join(st.session_state.players.keys())
-    st.text(f"名單：{player_names}")
+    st.text(f"Participants: {player_names}")
 
-    if st.button("🔥 全員同時擲骰子！", type="primary", use_container_width=True):
+    if st.button("🔥 ROLL THE DICE!", type="primary", use_container_width=True):
         st.divider()
         
-        # 模擬擲骰子動畫感
-        with st.status("正在瘋狂搖晃骰子盅...", expanded=True) as status:
+        # Simulated rolling animation
+        with st.status("Shaking the dice cup...", expanded=True) as status:
             time.sleep(1.5)
-            # 產生隨機點數 (1-100)
+            # Generate random points (1-100)
             results = {name: random.randint(1, 100) for name in st.session_state.players}
             st.session_state.players.update(results)
-            status.update(label="開蓋！結果揭曉！", state="complete", expanded=False)
+            status.update(label="Dice revealed!", state="complete", expanded=False)
 
-        # 找出最高分
+        # Determine the winner
         winner = max(results, key=results.get)
         max_point = results[winner]
 
-        # 慶祝動畫
+        # Celebration animation
         st.balloons()
-        st.header(f"👑 最終贏家：【{winner}】")
-        st.subheader(f"以 {max_point} 點力壓群雄！")
+        st.header(f"👑 Winner: 【{winner}】")
+        st.subheader(f"Dominating with {max_point} points!")
 
-        # 顯示所有人的戰果
+        # Detailed Scoreboard
         st.write("---")
-        st.write("### 戰報統計")
+        st.write("### Battle Report")
         
-        # 將結果排序顯示
+        # Sort results by score (descending)
         sorted_results = sorted(results.items(), key=lambda x: x[1], reverse=True)
         for name, score in sorted_results:
-            st.write(f"🎲 {name}：{score} 點")
+            st.write(f"🎲 {name}: {score} pts")
 
