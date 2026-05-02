@@ -2,90 +2,105 @@ import streamlit as st
 import random
 import time
 
-# 1. 核心：建立一個所有連線者共用的「全局資料庫」
+# 1. Global Shared State: This allows all connected users to see the same data
 @st.cache_resource
 def get_global_state():
     return {
-        "players": {},      # {name: last_roll}
-        "game_status": "WAITING", # WAITING, ROLLING, FINISHED
-        "winner": None,
-        "max_score": 0
+        "players": {},  # Format: { "Name": Score }, Score 0 means not rolled yet
     }
 
 global_data = get_global_state()
 
-st.set_page_config(page_title="Global Dice Battle", page_icon="🎲")
+# Page Setup
+st.set_page_config(page_title="Individual Dice Battle", page_icon="🎲")
 
-# --- 自動重新整理介面 (每 2 秒)，讓大家看到最新的玩家名單 ---
-# 如果沒按按鈕，這段會讓畫面保持更新
-if "last_update" not in st.session_state:
-    st.session_state.last_update = time.time()
+# --- Auto-refresh mechanism (every 3 seconds) to sync all screens ---
+if "last_sync" not in st.session_state:
+    st.session_state.last_sync = time.time()
 
-st.title("🎲 Global Dice Battle")
-st.write("Real-time Multiplayer Mode")
+st.title("🎲 Individual Dice Battle")
+st.write("Join the game and roll your own dice. The leaderboard updates in real-time!")
 
-# --- 側邊欄：加入區域 ---
+# --- Sidebar: Player Control Panel ---
 with st.sidebar:
-    st.header("📲 Join Game")
-    my_name = st.text_input("Enter your name", key="name_input")
+    st.header("🎮 Player Control")
     
-    if st.button("Join Now"):
-        if my_name:
-            global_data["players"][my_name] = 0
-            st.success(f"Hello {my_name}, you are in!")
-    
-    st.divider()
-    if st.button("Admin: Reset Game", type="secondary"):
-        global_data["players"] = {}
-        global_data["game_status"] = "WAITING"
-        global_data["winner"] = None
-        st.rerun()
-
-# --- 主畫面：顯示所有已連線玩家 ---
-st.subheader(f"Participants ({len(global_data['players'])})")
-if global_data['players']:
-    # 用標籤顯示目前在線上的所有人
-    cols = st.columns(5)
-    for idx, p_name in enumerate(global_data['players'].keys()):
-        cols[idx % 5].info(f"👤 {p_name}")
-else:
-    st.info("Waiting for players to join...")
-
-st.divider()
-
-# --- 遊戲控制邏輯 ---
-if global_data["game_status"] == "WAITING":
-    if st.button("🔥 EVERYONE ROLL NOW!", type="primary", use_container_width=True):
-        global_data["game_status"] = "ROLLING"
-        # 幫所有人擲骰子
-        results = {name: random.randint(1, 100) for name in global_data["players"]}
-        global_data["players"].update(results)
+    # Login Logic
+    if "my_identity" not in st.session_state:
+        name_input = st.text_input("Enter your name to join:", placeholder="e.g., Alex")
+        if st.button("Join Game", use_container_width=True):
+            if name_input:
+                st.session_state.my_identity = name_input
+                # Initialize score to 0 in the global database if new
+                if name_input not in global_data["players"]:
+                    global_data["players"][name_input] = 0 
+                st.rerun()
+    else:
+        # Interface for logged-in players
+        my_name = st.session_state.my_identity
+        st.success(f"Signed in as: **{my_name}**")
         
-        # 計算贏家
-        winner = max(results, key=results.get)
-        global_data["winner"] = winner
-        global_data["max_score"] = results[winner]
-        global_data["game_status"] = "FINISHED"
+        # Roll Button Logic
+        # Only show button if player hasn't rolled yet (score is 0)
+        current_score = global_data["players"].get(my_name, 0)
+        
+        if current_score == 0:
+            if st.button("🎲 ROLL MY DICE", type="primary", use_container_width=True):
+                my_roll = random.randint(1, 100)
+                global_data["players"][my_name] = my_roll
+                st.balloons()
+                st.rerun()
+        else:
+            st.info(f"Your Result: **{current_score}** pts")
+            if st.button("Change Name / Re-join", use_container_width=True):
+                del st.session_state.my_identity
+                st.rerun()
+
+    st.divider()
+    # Admin Controls
+    st.subheader("Admin Tools")
+    if st.button("Reset Leaderboard", type="secondary", help="Clears all player data"):
+        global_data["players"] = {}
         st.rerun()
 
-elif global_data["game_status"] == "FINISHED":
-    st.balloons()
-    st.header(f"👑 Winner: {global_data['winner']}")
-    st.subheader(f"Score: {global_data['max_score']} pts")
-    
-    # 顯示排行榜
-    st.write("### Full Scoreboard")
-    sorted_scores = sorted(global_data["players"].items(), key=lambda x: x[1], reverse=True)
-    for name, score in sorted_scores:
-        st.write(f"🎲 {name}: {score} pts")
-    
-    if st.button("Next Round"):
-        global_data["game_status"] = "WAITING"
-        # 重置分數
-        for name in global_data["players"]:
-            global_data["players"][name] = 0
-        st.rerun()
+# --- Main Area: Live Leaderboard ---
+st.subheader("📊 Live Leaderboard")
 
-# 讓頁面每 3 秒自動重整一次 (簡單的同步機制)
+if not global_data["players"]:
+    st.info("Waiting for participants to join and roll...")
+else:
+    # Separate players into those who finished and those still waiting
+    rolled = {k: v for k, v in global_data["players"].items() if v > 0}
+    waiting = [k for k, v in global_data["players"].items() if v == 0]
+
+    # Quick Stats
+    col1, col2 = st.columns(2)
+    col1.metric("Total Participants", len(global_data["players"]))
+    col2.metric("Dice Rolled", len(rolled))
+
+    st.divider()
+
+    # Display Ranked Leaderboard
+    if rolled:
+        # Sort by score descending
+        sorted_scores = sorted(rolled.items(), key=lambda x: x[1], reverse=True)
+        
+        # Highlight the current leader
+        leader_name, leader_score = sorted_scores[0]
+        st.markdown(f"### 🏆 Current Leader: **{leader_name}** ({leader_score} pts)")
+
+        # Visual Scoreboard
+        for idx, (name, score) in enumerate(sorted_scores):
+            st.write(f"**#{idx+1} {name}**")
+            st.progress(score / 100) # Visual progress bar (0.0 to 1.0)
+            st.caption(f"Score: {score} pts")
+    
+    # Display names of players who haven't rolled yet
+    if waiting:
+        st.write("---")
+        st.write("⏳ **Waiting for these players to roll:**")
+        st.write(", ".join(waiting))
+
+# Force update every 3 seconds so the big screen stays in sync with mobile inputs
 time.sleep(3)
 st.rerun()
