@@ -2,105 +2,110 @@ import streamlit as st
 import random
 import time
 
-# 1. Global Shared State: This allows all connected users to see the same data
+# 1. Global Shared State: Syncs data across all devices
 @st.cache_resource
 def get_global_state():
     return {
-        "players": {},  # Format: { "Name": Score }, Score 0 means not rolled yet
+        "players": {},  # { "Name": Score }
     }
 
 global_data = get_global_state()
 
-# Page Setup
-st.set_page_config(page_title="Individual Dice Battle", page_icon="🎲")
+# Page Configuration
+st.set_page_config(page_title="Dice Battle: Main Edition", page_icon="🎲", layout="centered")
 
-# --- Auto-refresh mechanism (every 3 seconds) to sync all screens ---
+# --- Auto-sync mechanism ---
 if "last_sync" not in st.session_state:
     st.session_state.last_sync = time.time()
 
 st.title("🎲 Individual Dice Battle")
-st.write("Join the game and roll your own dice. The leaderboard updates in real-time!")
+st.write("Join and roll directly below!")
 
-# --- Sidebar: Player Control Panel ---
-with st.sidebar:
-    st.header("🎮 Player Control")
+# --- MAIN INTERACTION AREA ---
+st.divider()
+
+# Logic: Check if the user has joined
+if "my_identity" not in st.session_state:
+    # STEP 1: JOINING
+    st.subheader("👋 Welcome! Join the Game")
+    name_input = st.text_input("Enter your nickname to start:", placeholder="e.g., Taylor")
     
-    # Login Logic
-    if "my_identity" not in st.session_state:
-        name_input = st.text_input("Enter your name to join:", placeholder="e.g., Alex")
-        if st.button("Join Game", use_container_width=True):
-            if name_input:
-                st.session_state.my_identity = name_input
-                # Initialize score to 0 in the global database if new
-                if name_input not in global_data["players"]:
-                    global_data["players"][name_input] = 0 
-                st.rerun()
-    else:
-        # Interface for logged-in players
-        my_name = st.session_state.my_identity
-        st.success(f"Signed in as: **{my_name}**")
-        
-        # Roll Button Logic
-        # Only show button if player hasn't rolled yet (score is 0)
-        current_score = global_data["players"].get(my_name, 0)
-        
-        if current_score == 0:
-            if st.button("🎲 ROLL MY DICE", type="primary", use_container_width=True):
-                my_roll = random.randint(1, 100)
-                global_data["players"][my_name] = my_roll
-                st.balloons()
-                st.rerun()
+    if st.button("JOIN GAME", type="primary", use_container_width=True):
+        if name_input:
+            # Clean name and add to global data
+            clean_name = name_input.strip()
+            st.session_state.my_identity = clean_name
+            if clean_name not in global_data["players"]:
+                global_data["players"][clean_name] = 0
+            st.rerun()
         else:
-            st.info(f"Your Result: **{current_score}** pts")
-            if st.button("Change Name / Re-join", use_container_width=True):
-                del st.session_state.my_identity
-                st.rerun()
+            st.error("Please enter a name first!")
 
-    st.divider()
-    # Admin Controls
-    st.subheader("Admin Tools")
-    if st.button("Reset Leaderboard", type="secondary", help="Clears all player data"):
-        global_data["players"] = {}
-        st.rerun()
+else:
+    # STEP 2: ROLLING or VIEWING RESULT
+    my_name = st.session_state.my_identity
+    current_score = global_data["players"].get(my_name, 0)
+    
+    st.subheader(f"Hello, **{my_name}**!")
+    
+    if current_score == 0:
+        # User hasn't rolled yet
+        st.info("Ready to test your luck?")
+        if st.button("🎲 ROLL MY DICE", type="primary", use_container_width=True):
+            my_roll = random.randint(1, 100)
+            global_data["players"][my_name] = my_roll
+            st.balloons()
+            st.rerun()
+    else:
+        # User has finished rolling
+        st.success(f"You rolled a **{current_score}**!")
+        if st.button("Leave / Change Name", use_container_width=False):
+            del st.session_state.my_identity
+            st.rerun()
 
-# --- Main Area: Live Leaderboard ---
+st.divider()
+
+# --- LIVE LEADERBOARD AREA ---
 st.subheader("📊 Live Leaderboard")
 
 if not global_data["players"]:
-    st.info("Waiting for participants to join and roll...")
+    st.info("Waiting for participants to join...")
 else:
-    # Separate players into those who finished and those still waiting
+    # Data Processing
     rolled = {k: v for k, v in global_data["players"].items() if v > 0}
     waiting = [k for k, v in global_data["players"].items() if v == 0]
 
-    # Quick Stats
-    col1, col2 = st.columns(2)
-    col1.metric("Total Participants", len(global_data["players"]))
-    col2.metric("Dice Rolled", len(rolled))
+    # Stats Summary
+    c1, c2 = st.columns(2)
+    c1.metric("Total Players", len(global_data["players"]))
+    c2.metric("Finished Rolls", len(rolled))
 
-    st.divider()
-
-    # Display Ranked Leaderboard
+    # Leaderboard Display
     if rolled:
-        # Sort by score descending
         sorted_scores = sorted(rolled.items(), key=lambda x: x[1], reverse=True)
         
-        # Highlight the current leader
-        leader_name, leader_score = sorted_scores[0]
-        st.markdown(f"### 🏆 Current Leader: **{leader_name}** ({leader_score} pts)")
-
-        # Visual Scoreboard
+        # Crown the leader
+        leader, high_score = sorted_scores[0]
+        st.markdown(f"### 🏆 Leader: **{leader}** ({high_score} pts)")
+        
         for idx, (name, score) in enumerate(sorted_scores):
-            st.write(f"**#{idx+1} {name}**")
-            st.progress(score / 100) # Visual progress bar (0.0 to 1.0)
+            # Highlight the current user in the list
+            label = f"**#{idx+1} {name}**" + (" (You)" if name == st.session_state.get("my_identity") else "")
+            st.write(label)
+            st.progress(score / 100)
             st.caption(f"Score: {score} pts")
-    
-    # Display names of players who haven't rolled yet
+
+    # Waiting List
     if waiting:
         st.write("---")
-        st.write("⏳ **Waiting for these players to roll:**")
-        st.write(", ".join(waiting))
+        st.write("⏳ **Waiting for:** " + ", ".join(waiting))
 
-# Force update every 3 seconds so the big screen stays in sync with mobile inputs
+# --- ADMIN SECTION (Hidden at bottom) ---
+with st.expander("🛠️ Admin Tools"):
+    if st.button("Reset Entire Game"):
+        global_data["players"] = {}
+        st.rerun()
+
+# Auto-refresh every 3 seconds
 time.sleep(3)
 st.rerun()
