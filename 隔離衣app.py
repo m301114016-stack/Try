@@ -1,94 +1,93 @@
 import streamlit as st
-from streamlit_sortables import sort_items
+import random
 
-# 設定網頁
-st.set_page_config(page_title="PPE 穿脫順序拼圖挑戰", page_icon="🧩", layout="centered")
+# 1. 網頁基本設定
+st.set_page_config(page_title="隔離衣穿脫順序挑戰", page_icon="🥼", layout="centered")
 
-st.title("🧩 PPE 穿脫順序拼圖遊戲")
-st.write("用滑鼠**上下拖曳**右側的卡片，拼出正確的感控防護順序吧！")
+st.title("🥼 隔離衣穿脫順序挑戰賽")
+st.write("請利用下拉選單，拼出正確的感控防護步驟順序！")
 
-# 正確答案定義
+# 2. 定義正確答案
 CORRECT_DONNING = ["內層口罩", "髮帽", "外層口罩", "內層手套", "隔離衣", "外層手套", "鞋套"]
-# 為了避免拖曳時兩個「洗手」卡片完全等價導致程式錯亂，我們在字尾加上不可見的空格
-CORRECT_DOFFING = ["外層手套", "隔離衣(由外而內反摺捲起)", "內層手套", "洗手 ", "外層口罩", "髮帽", "內層口罩", "洗手"]
+CORRECT_DOFFING = ["外層手套", "隔離衣(由外而內反摺捲起)", "內層手套", "洗手(第一次)", "外層口罩", "髮帽", "內層口罩", "洗手(第二次)"]
 
-# 初始化題目（只在第一次載入或重置時打亂順序）
-if "donning_puzzle" not in st.session_state:
-    import random
-    st.session_state.donning_puzzle = random.sample(CORRECT_DONNING, len(CORRECT_DONNING))
-if "doffing_puzzle" not in st.session_state:
-    import random
-    st.session_state.doffing_puzzle = random.sample(CORRECT_DOFFING, len(CORRECT_DOFFING))
+# 3. 初始化題目（打亂順序）
+if "donning_options" not in st.session_state:
+    st.session_state.donning_options = sorted(CORRECT_DONNING)
+if "doffing_options" not in st.session_state:
+    # 脫衣時前台顯示「洗手」即可，避免劇透
+    st.session_state.doffing_options = sorted(list(set([s.split("(")[0] if "洗手" in s else s for s in CORRECT_DOFFING])))
 
-# 切換 穿/脫 分頁
-tab1, tab2 = st.tabs(["🟢 挑戰一：穿上隔離衣", "🔴 挑戰二：脫卸隔離衣"])
+# 建立 穿/脫 分頁
+tab1, tab2 = st.tabs(["🟢 挑戰一：穿上隔離衣 (Donning)", "🔴 挑戰二：脫卸隔離衣 (Doffing)"])
 
 # -------------------------------------------------------------------------
-# TAB 1: 穿上隔離衣拼圖
+# 🟢 TAB 1: 穿上隔離衣
 # -------------------------------------------------------------------------
 with tab1:
-    st.subheader("請由上至下拖曳拼圖，完成【穿上】順序：")
+    st.subheader("請選出【穿上】隔離衣的正確順序：")
     
-    col1, col2 = st.columns([1, 3])
+    user_donning = []
+    col1, col2 = st.columns(2)
+    
     with col1:
-        st.write("順序參考：")
-        for i in range(1, 8):
-            st.markdown(f"**第 {i} 步** 👇")
-            
+        for i in range(1, 5):
+            choice = st.selectbox(f"第 {i} 步", ["--請選擇--"] + st.session_state.donning_options, key=f"don_{i}")
+            user_donning.append(choice)
     with col2:
-        # 呼叫拖曳元件
-        current_donning_order = sort_items(
-            st.session_state.donning_puzzle, 
-            direction="vertical", 
-            key="donning_sortable"
-        )
-        
+        for i in range(5, 8):
+            choice = st.selectbox(f"第 {i} 步", ["--請選擇--"] + st.session_state.donning_options, key=f"don_{i}")
+            user_donning.append(choice)
+            
     st.write("---")
-    if st.button("🧩 檢查穿上拼圖結果", type="primary", key="check_don"):
-        if current_donning_order == CORRECT_DONNING:
-            st.success("🎉 完美拼出！穿上順序完全正確，防護結界無懈可擊！")
+    if st.button("🧩 檢查穿上順序", type="primary"):
+        if "--請選擇--" in user_donning:
+            st.warning("⚠️ 請填寫完所有步驟再送出喔！")
+        elif user_donning == CORRECT_DONNING:
+            st.success("🎉 太棒了！穿上順序完全正確！無菌感控做得非常到位！")
         else:
-            st.error("❌ 拼圖順序有點不對勁喔！這樣可能會有感控漏洞，再調整看看！")
-            st.markdown("**💡 正確拼圖順序：**")
-            st.info(" ➡️ ".join(CORRECT_DONNING))
+            st.error("❌ 順序有誤！這樣可能會造成局部污染，再試一次吧！")
+            st.info("💡 **正確穿上順序提示：**\n\n" + " ➡️ ".join(CORRECT_DONNING))
 
 # -------------------------------------------------------------------------
-# TAB 2: 脫卸隔離衣拼圖
+# 🔴 TAB 2: 脫卸隔離衣
 # -------------------------------------------------------------------------
 with tab2:
-    st.subheader("請由上至下拖曳拼圖，完成【脫卸】順序：")
-    st.caption("提示：注意兩次『洗手』發生的關鍵時間點！")
+    st.subheader("請選出【脫卸】隔離衣的正確順序：")
+    st.caption("⚠️ 注意：請特別留意「洗手」出現的時機點！")
     
-    col1, col2 = st.columns([1, 3])
+    user_doffing_raw = []
+    col1, col2 = st.columns(2)
+    
     with col1:
-        st.write("順序參考：")
-        for i in range(1, 9):
-            st.markdown(f"**第 {i} 步** 👇")
-            
+        for i in range(1, 5):
+            choice = st.selectbox(f"第 {i} 步", ["--請選擇--"] + st.session_state.doffing_options, key=f"doff_{i}")
+            user_doffing_raw.append(choice)
     with col2:
-        # 呼叫拖曳元件
-        current_doffing_order = sort_items(
-            st.session_state.doffing_puzzle, 
-            direction="vertical", 
-            key="doffing_sortable"
-        )
-        
+        for i in range(5, 9):
+            choice = st.selectbox(f"第 {i} 步", ["--請選擇--"] + st.session_state.doffing_options, key=f"doff_{i}")
+            user_doffing_raw.append(choice)
+            
     st.write("---")
-    if st.button("🧩 檢查脫卸拼圖結果", type="primary", key="check_doff"):
-        if current_doffing_order == CORRECT_DOFFING:
-            st.success("🎉 太厲害了！脫卸順序完全正確！成功保護自己與外部環境！")
+    if st.button("🧩 檢查脫卸順序", type="primary"):
+        if "--請選擇--" in user_doffing_raw:
+            st.warning("⚠️ 請填寫完所有 8 個步驟再送出喔！")
         else:
-            st.error("❌ 糟了，這個拼法會讓你在脫除時暴露於污染風險中！")
-            st.markdown("**💡 正確拼圖順序：**")
-            # 呈現給使用者看時，把後台為了不重複而加的空格去掉
-            clean_correct = [s.strip() for s in CORRECT_DOFFING]
-            st.info(" ➡️ ".join(clean_correct))
-            st.caption("🔍 核心防護觀念：脫掉內層手套後要立刻洗手，才能去碰觸面部的口罩與髮帽喔！")
-
-# 側邊欄控制
-with st.sidebar:
-    st.markdown("### 🎮 遊戲控制面板")
-    if st.button("🔄 重新打亂拼圖"):
-        st.session_state.pop("donning_puzzle", None)
-        st.session_state.pop("doffing_puzzle", None)
-        st.rerun()
+            # 後台將使用者的「洗手」轉換為第一次與第二次，用來精準對答案
+            handwash_count = 0
+            user_doffing_processed = []
+            for item in user_doffing_raw:
+                if item == "洗手":
+                    handwash_count += 1
+                    user_doffing_processed.append("洗手(第一次)" if handwash_count == 1 else "洗手(第二次)")
+                else:
+                    user_doffing_processed.append(item)
+            
+            # 檢查答案
+            if user_doffing_processed == CORRECT_DOFFING:
+                st.success("🎉 完美！脫卸順序完全正確！成功保護自己與環境安全！")
+            else:
+                st.error("❌ 糟糕，順序不對！在碰觸面部（口罩、髮帽）前，必須先確保手部乾淨喔！")
+                # 呈現給使用者看時洗掉後台標記
+                clean_correct = [s.split("(")[0] if "洗手" in s else s for s in CORRECT_DOFFING]
+                st.info("💡 **正確脫卸順序提示：**\n\n" + " ➡️ ".join(clean_correct))
