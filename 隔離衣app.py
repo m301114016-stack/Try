@@ -1,4 +1,3 @@
-pip install streamlit streamlit-sortables
 import streamlit as st
 from streamlit_sortables import sort_items
 
