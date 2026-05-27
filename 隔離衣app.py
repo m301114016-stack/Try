@@ -5,7 +5,7 @@ import random
 st.set_page_config(page_title="隔離衣穿脫順序挑戰", page_icon="🥼", layout="centered")
 
 st.title("🥼 隔離衣穿脫順序挑戰賽")
-st.write("請利用下拉選單，拼出正確的感控防護步驟順序！")
+st.write("請利用下拉選單，拼出正確的步驟順序！")
 
 # 2. 定義正確答案
 CORRECT_DONNING = ["內層口罩", "髮帽", "外層口罩", "內層手套", "隔離衣", "外層手套", "鞋套"]
